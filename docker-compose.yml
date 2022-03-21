@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  database:
+    container_name: database
+    image: mariadb:latest
+    restart: unless-stopped
+    volumes:
+      - ./database:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_DATABASE: db01
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+
+  wordpress:
+    depends_on:
+      - database
+    container_name: wordpress
+    #image: ${SITE_IMAGE}:${SITE_VERSION}
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    restart: unless-stopped
+    volumes:
+      - /wp_content:/var/www/html
+      - ./conf.d/php.ini:/usr/local/etc/php/conf.d/php.ini
+    environment:
+      WORDPRESS_DB_HOST: database:3306
+      WORDPRESS_DB_NAME: db01
+      WORDPRESS_DB_USER: user
+      WORDPRESS_DB_PASSWORD: password
+      WORDPRESS_TABLE_PREFIX: wp_
+    logging:
+      options:
+        max-size: 200k
